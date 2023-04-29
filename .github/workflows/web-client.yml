@@ -1,0 +1,35 @@
+name: web-client
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+    paths:
+      - src/Web/**
+      - .github/workflows/blazor-client.yml
+
+env:
+  ACR_REGISTRY: ${{ secrets.ACR_REGISTRY }}
+  ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+  ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+  ACR_IMAGE_NAME: ${{ secrets.ACR_REGISTRY }}/web-client:${{ github.sha }}
+  DOTNET_VERSION: 7.0.x
+  DOCKERFILE_LOC: src/Web/BlazorApp1
+
+jobs:
+  build-and-store-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Build and push image
+        uses: ./.github/actions/deploy-image
+        with:
+          ACR_REGISTRY: ${{ env.ACR_REGISTRY }}
+          ACR_USERNAME: ${{ env.ACR_USERNAME }}
+          ACR_PASSWORD: ${{ env.ACR_PASSWORD }}
+          ACR_IMAGE_NAME: ${{ env.ACR_IMAGE_NAME }}
+          DOCKERFILE_LOC: ${{ env.DOCKERFILE_LOC }}

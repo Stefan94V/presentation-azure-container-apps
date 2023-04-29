@@ -1,0 +1,45 @@
+name: Build and push image
+description: Builds and pushes the image to the ACR
+
+inputs:
+  ACR_REGISTRY:
+    description: 'Login server name for the ACR Registry'
+    required: true
+  ACR_USERNAME:
+    description: 'Username of the admin account for the ACR Registry'
+    required: true
+  ACR_PASSWORD:
+    description: 'Password of the admin account for the ACR Registry'
+    required: true
+  ACR_IMAGE_NAME:
+    description: 'Image name'
+    required: true
+  DOTNET_VERSION: 
+    description: 'DOTNET version'
+    default: 7.0.x
+  DOCKERFILE_LOC: 
+    description: 'Location of the docker file'
+runs:
+  using: composite
+  steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ inputs.DOTNET_VERSION }}
+
+      - name: Login to ACR
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ inputs.ACR_REGISTRY }}
+          username: ${{ inputs.ACR_USERNAME }}
+          password: ${{ inputs.ACR_PASSWORD }}
+      
+      - name: Build and Push Image
+        shell: bash
+        run: |
+          cd ${{ inputs.DOCKERFILE_LOC }}
+          docker build . -t ${{ inputs.ACR_IMAGE_NAME }}
+          docker push ${{ inputs.ACR_IMAGE_NAME }}

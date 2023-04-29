@@ -1,0 +1,101 @@
+﻿@page "/"
+@using BlazorApp1.Clients
+@using System.Runtime.InteropServices.JavaScript
+
+@inject ImagesApiClient ImagesApiClient
+@inject PhrasesApiClient PhrasesApiClient
+
+<PageTitle>Index</PageTitle>
+
+<MudGrid Class="mt-2">
+    <MudItem xs="12" md="4">
+
+    </MudItem>
+    <MudItem xs="12" md="4">
+        <MudCard>
+            @if (_loadingImage)
+            {
+                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="250px"/>
+            }
+            else
+            {
+                <MudCardMedia Image="@_imageUrl" Height="250"/>
+            }
+            <MudCardContent>
+                @if (_loadingPhrase)
+                {
+                    <MudSkeleton Animation="Animation.Wave"/>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2">
+                        @_phrase
+                    </MudText>
+                }
+            </MudCardContent>
+            <MudCardActions>
+                <MudIconButton
+                    OnClick="LoadNew"
+                    Disabled="@(_loadingImage && _loadingPhrase)"
+                    Icon="@Icons.Material.Filled.Adjust"
+                    Color="Color.Primary"/>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+    <MudItem xs="12" md="4">
+    </MudItem>
+</MudGrid>
+
+
+@code{
+
+    private bool _loadingImage = true;
+    private bool _loadingPhrase = true;
+
+    private string _imageUrl;
+    private string _phrase;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetRandomImage();
+        await GetRandomPhrase();
+    }
+
+    private async Task LoadNew()
+    {
+        await GetRandomImage();
+        await GetRandomPhrase();
+    }
+
+
+    private async Task GetRandomImage()
+    {
+        try
+        {
+            _loadingImage = true;
+            _imageUrl = await ImagesApiClient.GetRandomImageUrl();
+            _loadingImage = false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            _loadingImage = true;
+        }
+    }
+
+    private async Task GetRandomPhrase()
+    {
+        try
+        {
+            _loadingPhrase = true;
+            _phrase = await PhrasesApiClient.GetPhraseByDate(DateTime.UtcNow);
+            _loadingPhrase = false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            _loadingPhrase = true;
+        }
+    }
+
+}
